@@ -8,6 +8,7 @@
 // CORS = Cross-Origin Resource Sharing
 // Le dice al navegador "sí, acepto peticiones desde otros dominios"
 // Sin esto, tu frontend en React/Angular/etc. sería bloqueado
+header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *"); //Permite peticiones desde CUALQUIER origen
 header("Access-Control-Allow-Methods:GET,POST,PUT,DELETE,OPTIONS"); //Métodos permitidos
 header("Access-Control-Allow-Headers:Content-Type"); //Solo permite este header
@@ -63,7 +64,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
         //json_decode convierte en un array PHP (true = array asociativo, no objeto)
         $data = json_decode(file_get_contents("php://input"), true);
 
-        $sql = "INSERT INTO tb_usuario_grupo (fecha_union,id_usuario,id_grupo) VALUES (:fecha_union,:id_usuario,id_grupo)";
+        $sql = "INSERT INTO tb_usuario_grupo (fecha_union,id_usuario,id_grupo) VALUES (:fecha_union,:id_usuario,:id_grupo)";
         $rs = $cn->prepare($sql);
         //execute mapea cada :parametro con su valor del JSON
         // Esto previene inyección SQL - nunca concatenes valores directo al SQL

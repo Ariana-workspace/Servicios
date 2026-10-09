@@ -52,9 +52,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
             $rs = $cn->prepare($sql);
             $rs->execute();
         }
-        // fetchAll devuelve todos los resultados como array asociativo
-        // json_encode lo convierte a JSON para enviarlo como respuesta
-        $rows = $rs->fetch(PDO::FETCH_ASSOC);
+        $rows = $rs->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($rows);
 
     // -- POST : INSERTAR un nuevo grupo -------------
@@ -91,11 +89,12 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
         //El ID viene por URL (?id=X) para saber qué fila actualizar
         $id = $_GET["id_grupo"];
 
-        $sql = "UPDATE tb_grupo SET nombre=:nombre, descripcion=:descripcion WHERE id_grupo=:id_grupo";
+        $sql = "UPDATE tb_grupo SET nombre=:nombre, descripcion=:descripcion, imagen =:imagen WHERE id_grupo=:id_grupo";
         $rs = $cn->prepare($sql);
         $rs->execute([
             ':nombre' => $datos['nombre'],
             ':descripcion' => $datos['descripcion'],
+            ':imagen' => $datos['imagen'],
             ':id_grupo' => $id // <- El WHERE necesita el ID también
 
         ]);

@@ -65,13 +65,37 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
             $sql = "SELECT * FROM tb_usuario WHERE id_usuario = :id_usuario";
             $rs = $cn->prepare($sql);
             $rs->execute([':id_usuario' => $_GET['id_usuario']]);
-        }else if(isset($_GET['nombre'])){
-            //Viene un ?id_rol=X → filtra por rol
+            
+        }else if (isset($_GET['buscar'])) {
+            $texto = trim($_GET['buscar']);
+        
+            if (strlen($texto) < 2) {
+                echo json_encode([]);
+                exit;
+            }
+        
+            $stmt = $cn->prepare(
+                "SELECT id_usuario, nombre
+                 FROM tb_usuario
+                 WHERE nombre LIKE :nombre OR id_usuario = :id
+                 LIMIT 20"
+            );
+            $stmt->execute([
+                ':nombre' => '%' . $texto . '%',
+                ':id'     => $texto
+            ]);
+            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+            exit;
+        }
+        else if(isset($_GET['nombre'])){
             $sql = "SELECT * FROM tb_usuario WHERE nombre = :nombre";
             $rs = $cn->prepare($sql);
             $rs->execute([':nombre' => $_GET['nombre']]);
-        } else {
-            //No viene nada → trae todos los usuarios
+        }else if(isset($_GET['email'])){
+            $sql = "SELECT * FROM tb_usuario WHERE email = :email";
+            $rs = $cn->prepare($sql);
+            $rs->execute([':email' => $_GET['email']]);
+        }  else {
             $sql = "SELECT * FROM tb_usuario";
             $rs = $cn->prepare($sql);
             $rs->execute();
@@ -88,7 +112,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
         //json_decode convierte en un array PHP (true = array asociativo, no objeto)
         $data = json_decode(file_get_contents("php://input"), true);
 
-        $sql = "INSERT INTO tb_usuario (nombre, email,password,fecha_union, genero, descripcion) VALUES (:nombre, :email, :password, :fecha_union, :genero, :descripcion)";
+        $sql = "INSERT INTO tb_usuario (nombre, email,password,fecha_union) VALUES (:nombre, :email, :password, :fecha_union)";
         $rs = $cn->prepare($sql);
         //execute mapea cada :parametro con su valor del JSON
         // Esto previene inyección SQL - nunca concatenes valores directo al SQL
@@ -97,8 +121,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
             ':email' => $data['email'],
             ':password' => $data['password'],
             ':fecha_union' => $data['fecha_union'],
-            ':genero' => $data['genero'],
-            ':descripcion' => $data['descripcion']
+            
         ]);
 
     // rowCount() devuelve cuántas filas fueron afectadas por la consulta
@@ -119,7 +142,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
         //El ID viene por URL (?id=X) para saber qué fila actualizar
         $id = $_GET["id_usuario"];
 
-        $sql = "UPDATE tb_usuario SET nombre=:nombre, email=:email, password=:password, fecha_union=:fecha_union, genero=:genero, descripcion=:descripcion WHERE id_usuario=:id_usuario";
+        $sql = "UPDATE tb_usuario SET nombre=:nombre, email=:email, password=:password, fecha_union=:fecha_union, genero=:genero, descripcion=:descripcion, foto=:foto WHERE id_usuario=:id_usuario";
         $rs = $cn->prepare($sql);
         $rs->execute([
             ':nombre' => $datos['nombre'],
@@ -128,6 +151,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
             ':fecha_union' => $datos['fecha_union'],
             ':genero' => $datos['genero'],
             ':descripcion' => $datos['descripcion'],
+            ':foto' => $datos['foto'],
             ':id_usuario' => $id // <- El WHERE necesita el ID también
 
         ]);
