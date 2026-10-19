@@ -23,11 +23,15 @@ if ($method === "GET") {
         $rs = $cn->prepare($sql);
         $rs->execute([':id_chat_directo' => $_GET['id_chat_directo']]);
     }else if (isset($_GET['id_usuario']) && isset($_GET['id_amigo'])) {
-        $sql = "SELECT * FROM tb_chat_directo WHERE (id_usuario = :id_usuario AND id_amigo = :id_amigo) OR (id_amigo = :id_amigo AND id_usuario = :id_usuario) ";
-        $rs = $cn->prepare($sql);
-        $rs->execute([':id_usuario' => $_GET['id_usuario'], ':id_amigo' => $_GET['id_amigo']]);
-        
-    }else {
+    $sql = "SELECT * FROM tb_chat_directo
+            WHERE (id_usuario = :u1 AND id_amigo = :a1)
+               OR (id_usuario = :a2 AND id_amigo = :u2)";
+    $rs = $cn->prepare($sql);
+    $rs->execute([
+        ':u1' => $_GET['id_usuario'], ':a1' => $_GET['id_amigo'],
+        ':a2' => $_GET['id_amigo'],   ':u2' => $_GET['id_usuario']
+    ]);
+}else {
         $sql = "SELECT * FROM tb_chat_directo";
         $rs = $cn->prepare($sql);
         $rs->execute();

@@ -37,23 +37,18 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
     //GET /api → trae todos
     if($method === "GET"){
         if(isset($_GET['id_mensaje'])){
-            //Viene un ?id=X en la URL → busca ese grupo específico
             $sql = "SELECT * FROM tb_mensajes WHERE id_mensaje = :id_mensaje";
             $rs = $cn->prepare($sql);
             $rs->execute([':id_mensaje' => $_GET['id_mensaje']]);
         }else if(isset($_GET['id_usuario'])){
-            //Viene un ?id_rol=X → filtra por rol
             $sql = "SELECT * FROM tb_mensajes WHERE id_usuario = :id_usuario";
             $rs = $cn->prepare($sql);
             $rs->execute([':id_usuario' => $_GET['id_usuario']]);
         } else {
-            //No viene nada → trae todos los grupos
             $sql = "SELECT * FROM tb_mensajes";
             $rs = $cn->prepare($sql);
             $rs->execute();
         }
-        // fetchAll devuelve todos los resultados como array asociativo
-        // json_encode lo convierte a JSON para enviarlo como respuesta
         $rows = $rs->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($rows);
 
@@ -62,13 +57,14 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
     } else if ($method === "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $sql = "INSERT INTO tb_mensajes (contenido,fecha,id_usuario,id_grupo) VALUES (:contenido,:fecha,:id_usuario,:id_grupo)";
+    $sql = "INSERT INTO tb_mensajes (contenido,fecha,id_usuario,id_grupo, id_chat_directo) VALUES (:contenido,:fecha,:id_usuario,:id_grupo, :id_chat_directo)";
     $rs = $cn->prepare($sql);
     $rs->execute([
         ':contenido' => $data['contenido'],
         ':fecha' => $data['fecha'],
         ':id_usuario' => $data['id_usuario'],
         ':id_grupo' => $data['id_grupo'],
+        ':id_chat_directo' => $data['id_chat_directo'],
     ]);
 
     if ($rs->rowCount() > 0) {
@@ -97,6 +93,7 @@ if($_SERVER['REQUEST_METHOD'] === "OPTIONS"){
             ':fecha' => $datos['fecha'],
             ':id_usuario' => $datos['id_usuario'],
             ':id_grupo' => $datos['id_grupo'],
+            ':id_chat_directo' => $datos['id_chat_directo'],
             ':id_mensaje' => $id // <- El WHERE necesita el ID también
 
         ]);
